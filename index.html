@@ -378,6 +378,8 @@
         <label>Credential number</label><input id="rId" type="number" placeholder="1">
         <label>Reason</label><input id="rWhy" value="Academic misconduct finding">
         <div class="actions"><button class="btn-red" id="revokeBtn">Revoke</button></div></div>
+      <div class="panel" style="grid-column:1/-1"><div class="step-n">STEP VI</div><h3>Credential artwork</h3><p class="sub">Makes the credentials show their picture in MetaMask. Do this once after deploying.</p>
+        <label>Artwork folder</label><div class="row"><input id="artBase"><button class="btn-gold" id="progArtBtn" style="flex:0 0 auto">Link artwork for all 4 programmes</button></div></div>
     </div>
     <div class="panel" style="margin-top:18px"><h3>The college ledger</h3><p class="sub">Every action is a public record on Sepolia.</p><div class="log" id="log"><p class="note">Loading…</p></div></div>
   </div>
@@ -404,6 +406,7 @@ const CRED_ABI = [
   "function verifyDocument(bytes32 documentHash) view returns (bool valid, uint256 tokenId)",
   "function issue(address to, bytes32 documentHash, string programmeCode, uint8 nfqLevel, uint64 awardDate) returns (uint256)",
   "function revoke(uint256 tokenId, string reason)",
+  "function setProgrammeURI(string programmeCode, string uri)",
   "event CredentialIssued(uint256 indexed tokenId, address indexed student, string programmeCode, uint8 nfqLevel)",
   "event CredentialRevoked(uint256 indexed tokenId, string reason)"
 ];
@@ -697,6 +700,16 @@ $("credBtn").onclick = async () => {
     $("copySalt").onclick = () => { navigator.clipboard.writeText(salt); toast("Salt copied."); };
     send(() => credW.issue(to, h, code, Number(level), awardDate), "Credential issued to the student's wallet.");
   } catch (e) { if (e.message !== "bad address") toast(errMsg(e)); }
+};
+$("artBase").value = "https://daddycassy.github.io/whitford-college/";
+$("progArtBtn").onclick = async () => {
+  if (!signer) return toast("Connect the Registrar wallet first.");
+  const base = $("artBase").value.trim().replace(/\/?$/, "/");
+  for (const code of ["MSC-FINTECH-L9", "MSC-DATA-L9", "BA-BUS-L8", "CERT-PY-L6"]) {
+    try { toast(`${code}: confirm in MetaMask…`, 30000); const tx = await credW.setProgrammeURI(code, base + code + ".json"); await tx.wait(); }
+    catch (e) { return toast("✖ Stopped at " + code + ": " + errMsg(e), 9000); }
+  }
+  toast("✔ Artwork linked for all 4 programmes. In MetaMask, refresh the NFT to see it.", 9000);
 };
 $("revokeBtn").onclick = () => { const id = $("rId").value; if (!id) return toast("Enter a credential number."); send(() => credW.revoke(id, $("rWhy").value), "Credential revoked."); };
 

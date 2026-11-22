@@ -1,0 +1,36 @@
+{
+  "name": "Whitford Credential - Certificate in Python",
+  "description": "Soulbound digital credential for the Certificate in Python (NFQ Level 6) from Whitford Global College, Dublin, a fictional college created for an NCI Blockchain Technologies project. It proves the award was issued by the college. No name or grades are stored on-chain; employers verify the certificate file with the salt given to the graduate. The credential cannot be transferred and can be revoked by the Registrar.",
+  "image": "https://daddycassy.github.io/whitford-college/CERT-PY-L6.png",
+  "external_url": "https://daddycassy.github.io/whitford-college/",
+  "attributes": [
+    {
+      "trait_type": "College",
+      "value": "Whitford Global College"
+    },
+    {
+      "trait_type": "Programme",
+      "value": "Certificate in Python"
+    },
+    {
+      "trait_type": "Programme code",
+      "value": "CERT-PY-L6"
+    },
+    {
+      "trait_type": "NFQ level",
+      "value": 6
+    },
+    {
+      "trait_type": "Award type",
+      "value": "Certificate"
+    },
+    {
+      "trait_type": "Standard",
+      "value": "ERC-721"
+    },
+    {
+      "trait_type": "Transferable",
+      "value": "No (soulbound)"
+    }
+  ]
+}
