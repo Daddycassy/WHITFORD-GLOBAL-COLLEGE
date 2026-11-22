@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whitford Global College | Merit Points and Digital Credentials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cinzel:wght@500;600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<style>
+  :root { --ink:#0f0609; --ink2:#1a0a10; --wine:#5c1430; --wine2:#8a2347; --gold:#d9b46a; --gold2:#f3dca0; --cream:#f4ead6; --text:#f1e7d6; --muted:#a8968c; --line:rgba(217,180,106,.16); --glass:rgba(255,240,220,.035); --green:#7fd9a8; --red:#ff8a7a;
+          --serif:"Cormorant Garamond", Georgia, serif; --caps:Cinzel, "Times New Roman", serif; --sans:Manrope, "Segoe UI", Arial, sans-serif; --mono:"JetBrains Mono", Consolas, monospace; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:var(--sans); color:var(--text); background:var(--ink); overflow-x:hidden; }
+  body:before { content:""; position:fixed; inset:0; pointer-events:none; z-index:100; opacity:.06; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .glow { position:fixed; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(70vw 60vh at 85% -10%, rgba(138,35,71,.45), transparent 60%), radial-gradient(60vw 60vh at -10% 40%, rgba(92,20,48,.4), transparent 60%), radial-gradient(50vw 40vh at 50% 110%, rgba(217,180,106,.12), transparent 60%); }
+  a { color:var(--gold); }
+  ::selection { background:var(--gold); color:var(--ink); }
+  .container { max-width:1200px; margin:0 auto; padding:0 28px; }
+  .gold-text { background:linear-gradient(100deg,#b8893a 0%,#f7e2a6 30%,#c99a45 55%,#fff1c9 75%,#b8893a 100%); background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:foil 7s linear infinite; }
+  @keyframes foil { to { background-position:200% center; } }
+
+  /* buttons */
+  button, .btn { white-space:nowrap; font:inherit; cursor:pointer; border:0; border-radius:999px; padding:12px 22px; font-weight:700; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:transform .2s, box-shadow .2s, border-color .2s, background .2s; color:var(--text); }
+  button:hover, .btn:hover { transform:translateY(-2px); }
+  .btn-gold { background:linear-gradient(135deg,#f6dea0,#c99a45 60%,#e9c77c); color:#2a1405; box-shadow:0 10px 30px -10px rgba(217,180,106,.7), inset 0 1px 0 rgba(255,255,255,.5); }
+  .btn-maroon { background:linear-gradient(135deg,#a3305a,#5c1430); color:#fff; box-shadow:0 10px 26px -10px rgba(163,48,90,.8), inset 0 1px 0 rgba(255,255,255,.15); }
+  .btn-ghost, .btn-line { background:rgba(255,240,220,.04); border:1px solid rgba(217,180,106,.3); color:var(--text); }
+  .btn-ghost:hover, .btn-line:hover { border-color:var(--gold); }
+  .btn-red { background:linear-gradient(135deg,#d04a3c,#7a1a12); color:#fff; }
+  .btn-small { padding:8px 15px; font-size:12.5px; }
+
+  /* nav */
+  .nav { position:fixed; top:14px; left:0; right:0; z-index:50; padding:0 14px; }
+  .nav .bar { max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:14px; padding:9px 10px 9px 16px; border-radius:999px; background:rgba(20,8,13,.62); border:1px solid var(--line); backdrop-filter:blur(18px) saturate(1.3); }
+  .crest { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
+  .crest svg { width:30px; height:34px; }
+  .crest b { font-family:var(--caps); font-weight:600; font-size:15px; letter-spacing:2px; display:block; line-height:1.1; }
+  .crest small { font-family:var(--serif); font-style:italic; font-size:13px; color:var(--gold); }
+  .links { display:flex; gap:2px; margin-left:18px; }
+  .links a { color:var(--muted); text-decoration:none; font-weight:600; font-size:13.5px; padding:8px 12px; border-radius:999px; transition:.2s; }
+  .links a:hover { color:var(--text); background:rgba(255,240,220,.06); }
+  .grow { flex:1; }
+  .wpill { font-family:var(--mono); font-size:12px; color:var(--muted); padding:7px 12px; border-radius:999px; border:1px solid var(--line); display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .wpill:before { content:""; width:7px; height:7px; border-radius:50%; background:#6b5a55; }
+  .wpill.on:before { background:var(--green); box-shadow:0 0 10px var(--green); }
+  .role { font-family:var(--caps); font-size:12px; letter-spacing:2px; color:var(--gold); }
+
+  /* hero */
+  .hero { min-height:100vh; display:flex; align-items:center; padding:130px 0 80px; position:relative; }
+  .hero .container { display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; width:100%; }
+  .motto { font-family:var(--caps); font-size:12px; letter-spacing:4px; color:var(--gold); display:flex; align-items:center; gap:14px; }
+  .motto:before, .motto:after { content:""; height:1px; width:40px; background:linear-gradient(90deg,transparent,var(--gold)); }
+  .motto:after { background:linear-gradient(90deg,var(--gold),transparent); }
+  h1 { font-family:var(--serif); font-weight:500; font-size:clamp(56px,7.6vw,112px); line-height:.9; letter-spacing:-1.5px; margin:26px 0 26px; }
+  h1 em { font-style:italic; font-weight:400; }
+  .lead { color:#c9b8aa; font-size:18px; line-height:1.7; max-width:520px; }
+  .cta { display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
+  .arch-stage { position:relative; height:600px; }
+  .arch { position:absolute; left:50%; top:0; transform:translateX(-50%); width:380px; height:540px; border-radius:190px 190px 14px 14px; overflow:hidden; border:1px solid rgba(217,180,106,.45); box-shadow:0 0 0 10px rgba(217,180,106,.05), 0 0 0 11px rgba(217,180,106,.2), 0 50px 100px -30px rgba(0,0,0,.9); background:linear-gradient(180deg,#1b0a2a 0%,#3a1030 45%,#7a2a3a 78%,#c56a3e 100%); }
+  .arch svg { position:absolute; inset:0; width:100%; height:100%; }
+  .star { animation:tw 3s ease-in-out infinite; }
+  @keyframes tw { 50% { opacity:.2; } }
+  .arch-stage .dip { position:absolute; width:360px; left:-30px; bottom:10px; transform:perspective(1000px) rotate(-6deg) rotateX(var(--rx)) rotateY(var(--ry)); animation:bob 8s ease-in-out infinite; z-index:3; }
+  .seal-float { position:absolute; right:-6px; top:60px; width:150px; z-index:4; animation:bob 7s ease-in-out infinite reverse; filter:drop-shadow(0 20px 30px rgba(0,0,0,.6)); }
+  @keyframes bob { 50% { margin-top:-14px; } }
+
+  /* marquee */
+  .marquee { border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden; white-space:nowrap; background:rgba(15,6,9,.7); }
+  .marquee div { display:inline-block; padding:20px 0; animation:tick 45s linear infinite; font-family:var(--serif); font-style:italic; font-size:30px; color:#e4d3bf; }
+  .marquee span { margin:0 26px; } .marquee em { font-style:normal; color:var(--gold); margin:0 10px; font-size:20px; }
+  @keyframes tick { to { transform:translateX(-50%); } }
+
+  /* sections */
+  section.block { padding:130px 0 30px; }
+  .head { text-align:center; max-width:760px; margin:0 auto 60px; }
+  .numeral { font-family:var(--caps); color:var(--gold); font-size:13px; letter-spacing:5px; }
+  .head h2 { font-family:var(--serif); font-weight:500; font-size:clamp(44px,5.4vw,76px); line-height:.95; letter-spacing:-1px; margin:16px 0 18px; }
+  .head h2 em { font-style:italic; font-weight:400; }
+  .head p { color:var(--muted); line-height:1.75; margin:0 auto; max-width:560px; }
+  .orn { display:flex; justify-content:center; margin:18px 0 0; }
+  .reveal { opacity:0; transform:translateY(40px); transition:opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity:1; transform:none; }
+
+  /* stats */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid var(--line); }
+  .stat { padding:34px 28px; border-right:1px solid var(--line); text-align:center; }
+  .stat:last-child { border-right:0; }
+  .stat b { font-family:var(--serif); font-weight:500; font-size:52px; display:block; line-height:1; }
+  .stat span { font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:700; }
+
+  /* programmes: arch cards */
+  .progs { display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+  .prog { border-radius:160px 160px 22px 22px; padding:0 0 26px; background:linear-gradient(180deg,rgba(255,240,220,.06),rgba(255,240,220,.015)); border:1px solid var(--line); overflow:hidden; transition:transform .4s, border-color .4s; position:relative; }
+  .prog:hover { transform:translateY(-8px); border-color:rgba(217,180,106,.5); }
+  .prog .win { height:190px; border-radius:160px 160px 0 0; position:relative; overflow:hidden; display:grid; place-items:center; }
+  .prog .win svg { width:70px; height:70px; position:relative; z-index:2; }
+  .prog .win:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 40%,rgba(15,6,9,.6)); }
+  .prog .lvl { font-family:var(--caps); font-size:11px; letter-spacing:3px; color:var(--gold); text-align:center; margin-top:20px; }
+  .prog h3 { font-family:var(--serif); font-weight:500; font-size:28px; text-align:center; margin:6px 18px 8px; line-height:1.05; }
+  .prog p { color:var(--muted); font-size:13.5px; line-height:1.6; text-align:center; margin:0 22px 14px; }
+  .chips { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .chip { font-size:11px; font-weight:700; letter-spacing:.5px; padding:5px 11px; border-radius:999px; border:1px solid var(--line); color:#d8c7b4; }
+
+  /* merit */
+  .merit-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; }
+  .card { background:linear-gradient(180deg,rgba(255,240,220,.05),rgba(255,240,220,.015)); border:1px solid var(--line); border-radius:26px; padding:30px; position:relative; overflow:hidden; }
+  .card .ix { font-family:var(--caps); font-size:12px; letter-spacing:3px; color:var(--gold); }
+  .card h3 { font-family:var(--serif); font-weight:500; font-size:34px; margin:6px 0 18px; line-height:1; }
+  .ledger { list-style:none; margin:0; padding:0; }
+  .ledger li { display:flex; align-items:baseline; gap:8px; padding:9px 0; font-size:14.5px; color:#dccbb8; }
+  .ledger li:after { content:""; order:2; flex:1; border-bottom:1px dotted rgba(217,180,106,.35); transform:translateY(-4px); }
+  .ledger li span { order:3; font-family:var(--serif); font-size:22px; font-weight:600; color:var(--gold2); }
+  .tiers { display:flex; flex-direction:column; gap:12px; }
+  .tier { border-radius:16px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
+  .tier .medal { width:46px; height:46px; border-radius:50%; flex:none; box-shadow:inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.3), 0 6px 14px rgba(0,0,0,.4); display:grid; place-items:center; font-family:var(--caps); font-weight:600; font-size:16px; }
+  .tier b { font-family:var(--serif); font-size:24px; font-weight:600; display:block; line-height:1; }
+  .tier small { color:var(--muted); font-size:12.5px; line-height:1.4; display:block; margin-top:3px; }
+  .tier { background:rgba(255,240,220,.03); border:1px solid var(--line); }
+  .m-b { background:radial-gradient(circle at 30% 30%,#f0b98a,#9b5a2c 70%); color:#3a1a05; }
+  .m-s { background:radial-gradient(circle at 30% 30%,#ffffff,#9aa2ae 70%); color:#2a2f38; }
+  .m-g { background:radial-gradient(circle at 30% 30%,#fff1c2,#c3922f 70%); color:#3a2500; }
+
+  /* hub */
+  .hub-grid { display:grid; grid-template-columns:400px 1fr; gap:24px; }
+  .idcard { position:relative; border-radius:24px; overflow:hidden; padding:0; background:linear-gradient(160deg,#2a0d18,#14060b); border:1px solid rgba(217,180,106,.35); box-shadow:0 40px 80px -30px rgba(0,0,0,.9); }
+  .idcard .band { background:linear-gradient(120deg,#5c1430,#8a2347 50%,#5c1430); padding:18px 22px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(217,180,106,.4); }
+  .idcard .band svg { width:30px; height:34px; }
+  .idcard .band b { font-family:var(--caps); letter-spacing:2px; font-size:13px; display:block; }
+  .idcard .band small { font-family:var(--serif); font-style:italic; color:var(--gold2); font-size:14px; }
+  .idcard .body { padding:22px; }
+  .lbl { font-size:10px; letter-spacing:2.2px; color:var(--muted); font-weight:800; }
+  .idcard .addr { font-family:var(--mono); font-size:12px; color:#e5d6c4; word-break:break-all; margin:4px 0 16px; }
+  .points { font-family:var(--serif); font-weight:500; font-size:78px; line-height:.9; }
+  .points-row { display:flex; align-items:flex-end; gap:10px; }
+  .points-row small { color:var(--muted); font-size:13px; padding-bottom:10px; }
+  .tierbar { height:8px; border-radius:8px; background:rgba(255,240,220,.08); margin:16px 0 8px; overflow:hidden; }
+  .tierbar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#c99a45,#f6dea0); border-radius:8px; transition:width 1.2s cubic-bezier(.2,.7,.2,1); box-shadow:0 0 14px rgba(217,180,106,.6); }
+  .tiermeta { display:flex; justify-content:space-between; font-size:12.5px; color:#cdbcab; }
+  .panel { background:linear-gradient(180deg,rgba(255,240,220,.05),rgba(255,240,220,.015)); border:1px solid var(--line); border-radius:26px; padding:26px; }
+  .panel h3 { font-family:var(--serif); font-weight:500; font-size:32px; margin:0 0 4px; line-height:1; }
+  .panel .sub { color:var(--muted); font-size:13.5px; line-height:1.6; margin:6px 0 18px; }
+  .perk { display:flex; align-items:center; gap:14px; padding:13px 0; border-top:1px solid var(--line); }
+  .perk:first-child { border-top:0; }
+  .perk .ic { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:19px; background:radial-gradient(circle at 30% 30%,rgba(217,180,106,.3),rgba(92,20,48,.4)); border:1px solid var(--line); flex:none; }
+  .perk small { display:block; color:var(--muted); font-family:var(--mono); font-size:11.5px; margin-top:2px; }
+  .creds { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:26px; }
+  .note { color:var(--muted); font-size:13px; line-height:1.6; }
+  .empty { border:1px dashed rgba(217,180,106,.3); border-radius:18px; aspect-ratio:1.414/1; max-width:460px; display:grid; place-items:center; text-align:center; padding:20px; color:var(--muted); font-family:var(--serif); font-style:italic; font-size:19px; }
+
+  /* badges */
+  .badge { display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; letter-spacing:1.3px; padding:5px 11px; border-radius:999px; text-transform:uppercase; white-space:nowrap; }
+  .b-ok { background:rgba(127,217,168,.12); color:var(--green); border:1px solid rgba(127,217,168,.4); }
+  .b-wait { background:rgba(217,180,106,.12); color:var(--gold2); border:1px solid rgba(217,180,106,.4); }
+  .b-no { background:rgba(255,138,122,.12); color:var(--red); border:1px solid rgba(255,138,122,.4); }
+  .b-gold { background:linear-gradient(135deg,#f6dea0,#c99a45); color:#2a1405; }
+
+  /* parchment diploma */
+  .dip { container-type:inline-size; --mx:50%; --my:50%; --rx:0deg; --ry:0deg; position:relative; aspect-ratio:1.414/1; border-radius:6px; transform:perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); transition:transform .5s cubic-bezier(.2,.7,.2,1); box-shadow:0 40px 70px -25px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.2); }
+  .dip.live { transition:transform .08s linear; }
+  .dip-in { position:absolute; inset:0; border-radius:inherit; overflow:hidden; color:#3a1a14; text-align:center; padding:6cqw 7cqw 5cqw;
+            background:radial-gradient(120% 90% at 50% 0%,#fbf5e7,#f1e4c6 60%,#e5d1a8 100%); }
+  .dip-in:before { content:""; position:absolute; inset:2.2cqw; border:.5cqw double #b48a3c; border-radius:2px; pointer-events:none; }
+  .dip-in:after { content:""; position:absolute; inset:3.4cqw; border:1px solid rgba(180,138,60,.45); pointer-events:none; }
+  .dip-wm { position:absolute; left:50%; top:52%; width:42cqw; transform:translate(-50%,-50%); opacity:.045; }
+  .dip-crest { width:8cqw; height:9cqw; margin:0 auto; display:block; position:relative; }
+  .dip-school { font-family:var(--caps); font-weight:600; font-size:3.4cqw; letter-spacing:.7cqw; margin-top:1.4cqw; color:#5c1430; position:relative; }
+  .dip-conf { font-family:var(--serif); font-style:italic; font-size:2.8cqw; color:#6b4a3a; margin-top:1.8cqw; position:relative; }
+  .dip-prog { font-family:var(--serif); font-weight:600; font-size:7.6cqw; line-height:1; margin-top:1cqw; position:relative;
+              background:linear-gradient(100deg,#7a5418,#c99a45 40%,#8a5f1c 60%,#b8893a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .dip-deg { font-family:var(--serif); font-style:italic; font-size:3.6cqw; color:#5c1430; position:relative; }
+  .dip-meta { position:absolute; left:7cqw; right:7cqw; bottom:6cqw; display:flex; justify-content:space-between; align-items:flex-end; text-align:left; }
+  .dip-meta small { display:block; font-family:var(--caps); font-size:1.8cqw; letter-spacing:.4cqw; color:#8a6a55; }
+  .dip-meta b { font-family:var(--serif); font-size:3.2cqw; font-weight:600; color:#3a1a14; }
+  .dip-sig { border-top:1px solid #8a6a55; padding-top:.6cqw; min-width:22cqw; }
+  .dip-no { position:absolute; top:4.6cqw; right:5.4cqw; font-family:var(--mono); font-size:2cqw; color:#8a6a55; }
+  .dip-chain { position:absolute; top:4.6cqw; left:5.4cqw; font-family:var(--mono); font-size:1.9cqw; color:#8a6a55; letter-spacing:.2cqw; }
+  .seal { position:absolute; left:50%; bottom:3.6cqw; transform:translateX(-50%); width:15cqw; height:15cqw; }
+  .seal svg { width:100%; height:100%; animation:spin 30s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .seal span { position:absolute; inset:0; display:grid; place-items:center; font-family:var(--caps); font-weight:600; font-size:2cqw; letter-spacing:.3cqw; color:#3a2500; }
+  .dip .holo { position:absolute; inset:0; mix-blend-mode:overlay; pointer-events:none; opacity:0; transition:opacity .4s; background:conic-gradient(from 90deg at var(--mx) var(--my),#ffd3f0,#c9ecff,#d7ffe6,#fff6c4,#ffd3f0); }
+  .dip:hover .holo { opacity:.55; }
+  .dip .glare { position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.55),transparent 40%); opacity:0; transition:opacity .3s; }
+  .dip:hover .glare { opacity:1; }
+  .dip-link { display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:12.5px; }
+  .dip-link a { font-family:var(--mono); font-size:12px; }
+  .dip.revoked .dip-in { filter:grayscale(.85) sepia(.2); }
+  .dip.revoked .dip-in > *:not(.stamp):not(.dip-wm) { opacity:.55; }
+  .stamp { position:absolute; top:44%; left:50%; transform:translate(-50%,-50%) rotate(-14deg); font-family:var(--caps); font-weight:600; font-size:8cqw; letter-spacing:1.4cqw; color:#b3261e; border:.8cqw solid #b3261e; padding:.6cqw 3cqw; border-radius:1.2cqw; opacity:.85; mix-blend-mode:multiply; z-index:5; }
+
+  /* verify */
+  .verify-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  label { display:block; font-size:10.5px; color:var(--muted); font-weight:800; letter-spacing:1.6px; text-transform:uppercase; margin:14px 0 8px; }
+  input, select { width:100%; padding:13px 15px; border:1px solid rgba(217,180,106,.18); border-radius:14px; font:inherit; font-size:14.5px; background:rgba(0,0,0,.3); color:var(--text); transition:border-color .2s, box-shadow .2s; }
+  select option, select optgroup { background:#1d0b12; }
+  input:focus, select:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 4px rgba(217,180,106,.12); }
+  input[type=file] { padding:10px; font-size:13px; }
+  input[type=file]::file-selector-button { font:inherit; font-weight:700; font-size:12px; border:0; border-radius:999px; padding:7px 14px; margin-right:10px; background:rgba(217,180,106,.18); color:var(--gold2); cursor:pointer; }
+  .row { display:flex; gap:12px; } .row > * { flex:1; }
+  .actions { margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; }
+  .result { margin-top:18px; }
+  .result .dip { margin-top:14px; }
+
+  /* registrar */
+  .lock { text-align:center; border:1px solid var(--line); border-radius:200px 200px 28px 28px; padding:70px 30px 50px; max-width:640px; margin:0 auto; background:radial-gradient(60% 60% at 50% 0%,rgba(138,35,71,.35),transparent 70%), rgba(255,240,220,.02); }
+  .wax { width:130px; height:130px; margin:0 auto 20px; filter:drop-shadow(0 14px 24px rgba(0,0,0,.6)); }
+  .lock h3 { font-family:var(--serif); font-weight:500; font-size:38px; margin:0 0 8px; }
+  .mono { font-family:var(--mono); font-size:12px; word-break:break-all; background:rgba(0,0,0,.35); border:1px solid var(--line); padding:8px 12px; border-radius:10px; color:#e5d6c4; display:inline-block; }
+  .reg-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .reg-grid .panel h3 { font-size:28px; }
+  .step-n { font-family:var(--caps); font-size:11px; letter-spacing:3px; color:var(--gold); margin-bottom:6px; }
+  .log div { padding:12px 0; border-top:1px solid var(--line); font-size:13.5px; display:flex; justify-content:space-between; gap:12px; }
+  .log div:first-child { border-top:0; }
+  .log a { font-family:var(--mono); font-size:11.5px; white-space:nowrap; }
+
+  footer { margin-top:120px; border-top:1px solid var(--line); padding:60px 0 30px; color:var(--muted); font-size:13.5px; overflow:hidden; }
+  footer .cols { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:24px; }
+  footer h4 { font-family:var(--caps); color:var(--text); margin:0 0 12px; font-size:12px; letter-spacing:2.5px; font-weight:600; }
+  footer a { color:var(--muted); text-decoration:none; display:block; margin:7px 0; } footer a:hover { color:var(--gold); }
+  .giant { font-family:var(--serif); font-style:italic; font-size:clamp(80px,16vw,240px); line-height:.85; text-align:center; margin:70px 0 14px; color:transparent; -webkit-text-stroke:1px rgba(217,180,106,.22); user-select:none; }
+  .legal { border-top:1px solid var(--line); padding-top:18px; font-size:12px; display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+
+  #toast { position:fixed; right:22px; bottom:22px; max-width:420px; background:rgba(26,10,16,.94); backdrop-filter:blur(14px); color:var(--text); padding:14px 18px; border-radius:16px; font-size:13.5px; box-shadow:0 20px 50px rgba(0,0,0,.6); display:none; z-index:120; border:1px solid rgba(217,180,106,.4); }
+  .hidden { display:none !important; }
+  @media (max-width:1000px) { .hero .container, .merit-grid, .hub-grid, .verify-grid { grid-template-columns:1fr; } .progs, .reg-grid, .stats, footer .cols { grid-template-columns:1fr 1fr; } .links, .wpill { display:none; } .arch-stage { display:none; } }
+  @media (max-width:640px) { .progs, .reg-grid, .stats, footer .cols { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<div class="nav"><div class="bar">
+  <a class="crest" href="#top">
+    <svg viewBox="0 0 46 52"><path d="M23 2 44 9v16c0 13-9 21-21 25C11 46 2 38 2 25V9z" fill="#5c1430" stroke="#d9b46a" stroke-width="2"/><path d="M23 12l11 5H12z" fill="#f3dca0"/><rect x="14" y="18" width="3" height="13" fill="#f3dca0"/><rect x="21.5" y="18" width="3" height="13" fill="#f3dca0"/><rect x="29" y="18" width="3" height="13" fill="#f3dca0"/><rect x="12" y="32" width="22" height="3" fill="#f3dca0"/></svg>
+    <span><b>WHITFORD</b><small>Global College</small></span>
+  </a>
+  <nav class="links"><a href="#programmes">Programmes</a><a href="#merit">Merit Points</a><a href="#hub">Student Hub</a><a href="#verify">Verify</a><a href="#registrar">Registrar</a></nav>
+  <span class="grow"></span>
+  <span class="role" id="roleLbl"></span>
+  <span class="wpill" id="netPill">Not connected</span>
+  <button class="btn-ghost btn-small" id="switchBtn">Switch</button>
+  <button class="btn-gold btn-small" id="connectBtn">Connect wallet</button>
+</div></div>
+
+<a id="top"></a>
+<section class="hero">
+  <div class="container">
+    <div class="reveal">
+      <div class="motto">DUBLIN · EST. 1998</div>
+      <h1>Learn with purpose.<br>Graduate with <em class="gold-text">proof.</em></h1>
+      <p class="lead">Every Whitford qualification is issued as a tamper-proof digital credential that employers anywhere can verify in seconds, and every week of effort earns Merit Points you can spend on campus.</p>
+      <div class="cta"><a class="btn btn-gold" href="#hub">Enter the Student Hub →</a><a class="btn btn-ghost" href="#verify">Verify a degree</a></div>
+    </div>
+    <div class="arch-stage reveal" id="archStage">
+      <div class="arch">
+        <svg viewBox="0 0 380 540" preserveAspectRatio="xMidYMax slice">
+          <g fill="#fff"><circle class="star" cx="60" cy="90" r="1.4"/><circle class="star" cx="140" cy="50" r="1" style="animation-delay:1s"/><circle class="star" cx="300" cy="80" r="1.3" style="animation-delay:.5s"/><circle class="star" cx="250" cy="150" r="1" style="animation-delay:1.6s"/><circle class="star" cx="90" cy="180" r="1.1" style="animation-delay:2.2s"/><circle class="star" cx="330" cy="200" r="1" style="animation-delay:.9s"/><circle class="star" cx="200" cy="40" r="1.2" style="animation-delay:1.3s"/></g>
+          <circle cx="285" cy="130" r="30" fill="#f6e3b0" opacity=".95"/><circle cx="273" cy="124" r="28" fill="#2a0e2c" opacity=".35"/>
+          <g fill="#14060b">
+            <rect x="160" y="210" width="60" height="330"/><path d="M152 214h76l-38-62z"/><rect x="186" y="128" width="8" height="30"/>
+            <rect x="40" y="350" width="300" height="190"/><path d="M30 354h320l-160-58z"/>
+            <rect x="0" y="420" width="60" height="120"/><rect x="320" y="400" width="60" height="140"/>
+          </g>
+          <circle cx="190" cy="262" r="17" fill="#f3dca0"/><circle cx="190" cy="262" r="13" fill="#fbf0cf"/><path d="M190 252v10l7 5" stroke="#5c1430" stroke-width="2" fill="none"/>
+          <g fill="#f3c46a"><rect x="64" y="390" width="14" height="26" rx="7"/><rect x="104" y="390" width="14" height="26" rx="7" opacity=".6"/><rect x="262" y="390" width="14" height="26" rx="7"/><rect x="302" y="390" width="14" height="26" rx="7" opacity=".7"/><rect x="176" y="300" width="10" height="18" rx="5" opacity=".8"/><rect x="194" y="300" width="10" height="18" rx="5"/><path d="M174 540v-56a16 16 0 0 1 32 0v56z" opacity=".9"/></g>
+        </svg>
+      </div>
+      <svg class="seal-float" viewBox="0 0 160 160"><defs><radialGradient id="wx" cx=".35" cy=".3"><stop offset="0" stop-color="#c23b62"/><stop offset=".7" stop-color="#7a1534"/><stop offset="1" stop-color="#4a0b1f"/></radialGradient></defs><path fill="url(#wx)" d="M80 6c10 0 14 8 24 9s18-4 24 4 2 16 7 24 14 11 14 21-8 14-9 24 4 18-4 24-16 2-24 7-11 14-21 14-14-8-24-9-18 4-24-4-2-16-7-24-14-11-14-21 8-14 9-24-4-18 4-24 16-2 24-7S70 6 80 6z"/><circle cx="80" cy="80" r="44" fill="none" stroke="#e7a3b6" stroke-opacity=".5" stroke-width="2"/><g transform="translate(57 54) scale(1)"><path d="M23 2 44 9v16c0 13-9 21-21 25C11 46 2 38 2 25V9z" fill="none" stroke="#f1b9c8" stroke-width="2.5"/><path d="M23 12l11 5H12z" fill="#f1b9c8"/><rect x="14" y="18" width="3" height="13" fill="#f1b9c8"/><rect x="21.5" y="18" width="3" height="13" fill="#f1b9c8"/><rect x="29" y="18" width="3" height="13" fill="#f1b9c8"/></g></svg>
+    </div>
+  </div>
+</section>
+
+<div class="marquee"><div id="marq"></div></div>
+<div class="stats">
+  <div class="stat reveal"><b class="gold-text">3,800</b><span>Students</span></div>
+  <div class="stat reveal"><b class="gold-text">1,200</b><span>Awards a year</span></div>
+  <div class="stat reveal"><b class="gold-text">28%</b><span>International</span></div>
+  <div class="stat reveal"><b class="gold-text">NFQ 6–9</b><span>Certificate to master's</span></div>
+</div>
+
+<section class="block" id="programmes"><div class="container">
+  <div class="head reveal"><div class="numeral">— I —</div><h2>Our <em class="gold-text">programmes</em></h2><p>Every graduate receives a verifiable digital credential alongside their official QQI award.</p></div>
+  <div class="progs">
+    <div class="prog reveal"><div class="win" style="background:radial-gradient(circle at 50% 80%,#c23b62,#5c1430 70%)"><svg viewBox="0 0 64 64" fill="none" stroke="#f3dca0" stroke-width="2.5"><rect x="10" y="18" width="44" height="30" rx="4"/><path d="M10 26h44M18 40h10"/><circle cx="46" cy="40" r="4"/></svg></div><div class="lvl">NFQ LEVEL 9</div><h3>MSc in FinTech</h3><p>Blockchain, digital payments and financial data, with industry projects.</p><div class="chips"><span class="chip">1 year</span><span class="chip">Full-time</span></div></div>
+    <div class="prog reveal" style="transition-delay:.1s"><div class="win" style="background:radial-gradient(circle at 50% 80%,#7d5ad1,#2e1a5a 70%)"><svg viewBox="0 0 64 64" fill="none" stroke="#f3dca0" stroke-width="2.5"><path d="M10 52h44"/><rect x="14" y="34" width="8" height="18"/><rect x="28" y="22" width="8" height="30"/><rect x="42" y="12" width="8" height="40"/></svg></div><div class="lvl">NFQ LEVEL 9</div><h3>MSc in Data Analytics</h3><p>Machine learning, statistics and visualisation for business decisions.</p><div class="chips"><span class="chip">1 year</span><span class="chip">Evening option</span></div></div>
+    <div class="prog reveal" style="transition-delay:.2s"><div class="win" style="background:radial-gradient(circle at 50% 80%,#e0a84a,#6b4210 70%)"><svg viewBox="0 0 64 64" fill="none" stroke="#fff4d6" stroke-width="2.5"><rect x="12" y="22" width="40" height="28" rx="4"/><path d="M24 22v-6h16v6M12 34h40"/></svg></div><div class="lvl">NFQ LEVEL 8</div><h3>BA (Hons) in Business</h3><p>Management, marketing and finance with a work placement.</p><div class="chips"><span class="chip">3 years</span><span class="chip">Placement</span></div></div>
+    <div class="prog reveal" style="transition-delay:.3s"><div class="win" style="background:radial-gradient(circle at 50% 80%,#3fae96,#123f39 70%)"><svg viewBox="0 0 64 64" fill="none" stroke="#e9fff7" stroke-width="2.5"><path d="M24 20 12 32l12 12M40 20l12 12-12 12M35 16l-6 32"/></svg></div><div class="lvl">NFQ LEVEL 6</div><h3>Certificate in Python</h3><p>A practical start in programming for career changers.</p><div class="chips"><span class="chip">12 weeks</span><span class="chip">Part-time</span></div></div>
+  </div>
+</div></section>
+
+<section class="block" id="merit"><div class="container">
+  <div class="head reveal"><div class="numeral">— II —</div><h2>Your effort, <em class="gold-text">rewarded</em></h2><p>Whitford Merit Points are an ERC-20 token on Ethereum. They have no cash value and cannot be traded, so they always reward the student who earned them.</p></div>
+  <div class="merit-grid">
+    <div class="card reveal"><div class="ix">I · EARN</div><h3>Earn points</h3><ul class="ledger">
+      <li>Full week of attendance<span>+5</span></li><li>Assignment on time<span>+10</span></li><li>Module passed<span>+50</span></li><li>Peer tutoring, 4 weeks<span>+30</span></li><li>Refer a friend<span>+25</span></li><li>Graduation bonus<span>+100</span></li></ul></div>
+    <div class="card reveal" style="transition-delay:.1s"><div class="ix">II · SPEND</div><h3>Spend on campus</h3><ul class="ledger">
+      <li>Priority study room<span>20</span></li><li>Canteen coffee<span>30</span></li><li>Library late-fee waiver<span>40</span></li><li>Printing credit, EUR 5<span>50</span></li><li>Society or ball ticket<span>100</span></li><li>Whitford merchandise<span>150</span></li><li>Give back: hardship fund<span>100</span></li></ul></div>
+    <div class="card reveal" style="transition-delay:.2s"><div class="ix">III · RISE</div><h3>Rise through the tiers</h3><div class="tiers">
+      <div class="tier"><div class="medal m-b">B</div><div><b>Bronze</b><small>Up to 299 points · standard perks</small></div></div>
+      <div class="tier"><div class="medal m-s">S</div><div><b>Silver</b><small>300 to 799 · extended library loans, early room booking</small></div></div>
+      <div class="tier"><div class="medal m-g">G</div><div><b>Gold</b><small>800+ · priority career-fair slots, Dean's engagement list</small></div></div></div></div>
+  </div>
+</div></section>
+
+<section class="block" id="hub"><div class="container">
+  <div class="head reveal"><div class="numeral">— III —</div><h2>The Student <em class="gold-text">Hub</em></h2><p>Connect your student wallet to see your Merit Points, your learner tier and your verified credentials.</p></div>
+  <div class="hub-grid">
+    <div class="reveal">
+      <div class="idcard">
+        <div class="band"><svg viewBox="0 0 46 52"><path d="M23 2 44 9v16c0 13-9 21-21 25C11 46 2 38 2 25V9z" fill="#14060b" stroke="#f3dca0" stroke-width="2"/><path d="M23 12l11 5H12z" fill="#f3dca0"/><rect x="14" y="18" width="3" height="13" fill="#f3dca0"/><rect x="21.5" y="18" width="3" height="13" fill="#f3dca0"/><rect x="29" y="18" width="3" height="13" fill="#f3dca0"/><rect x="12" y="32" width="22" height="3" fill="#f3dca0"/></svg><div><b>STUDENT CARD</b><small>Whitford Global College</small></div></div>
+        <div class="body">
+          <div class="lbl">STUDENT WALLET</div><div class="addr" id="addr">Not connected</div>
+          <div class="lbl">MERIT POINTS</div>
+          <div class="points-row"><div class="points gold-text" id="balance">–</div><small>points to spend</small></div>
+          <div class="tierbar"><i id="tierFill"></i></div>
+          <div class="tiermeta"><span id="tierName">Tier: –</span><span id="tierNext"></span></div>
+          <div style="margin-top:16px" id="enrolLine"><span class="badge b-wait">Connect wallet</span></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:20px"><h3>Campus perks</h3><p class="sub">Redeeming burns your points; campus services then give you the perk.</p><div id="perks"><p class="note">Loading perks…</p></div></div>
+    </div>
+    <div class="panel reveal"><h3>My credentials</h3><p class="sub">Soulbound ERC-721 certificates issued by the Registrar. No name or grades are stored on-chain. Move your cursor over a certificate.</p><div class="creds" id="creds"><div class="empty">Connect your wallet to see your credentials.</div></div></div>
+  </div>
+</div></section>
+
+<section class="block" id="verify"><div class="container">
+  <div class="head reveal"><div class="numeral">— IV —</div><h2>Verify a <em class="gold-text">Whitford degree</em></h2><p>For employers and universities: free, instant and open to anyone. No need to contact the Registrar's office.</p></div>
+  <div class="verify-grid">
+    <div class="panel reveal"><div class="step-n">METHOD I</div><h3>By credential number</h3><p class="sub">Enter the number the graduate gave you.</p>
+      <label>Credential number</label><div class="row"><input id="chkId" type="number" placeholder="e.g. 1"><button class="btn-gold" id="chkBtn" style="flex:0 0 auto">Verify</button></div>
+      <div class="result" id="chkOut"></div></div>
+    <div class="panel reveal"><div class="step-n">METHOD II</div><h3>By certificate file</h3><p class="sub">Upload the PDF with the salt the graduate shared. Change even one character and it will not match.</p>
+      <label>Certificate file</label><input id="vFile" type="file">
+      <label>Salt from the graduate</label><input id="vSalt" placeholder="0x…">
+      <div class="actions"><button class="btn-gold" id="fileBtn">Check file</button></div>
+      <div class="result" id="fileOut"></div></div>
+  </div>
+</div></section>
+
+<section class="block" id="registrar"><div class="container">
+  <div class="head reveal"><div class="numeral">— V —</div><h2>The Registrar's <em class="gold-text">office</em></h2><p>Staff only. Enrol students, award Merit Points, set campus perks, and issue or revoke credentials.</p></div>
+  <div class="lock reveal" id="regLock">
+    <svg class="wax" viewBox="0 0 160 160"><defs><radialGradient id="wx2" cx=".35" cy=".3"><stop offset="0" stop-color="#c23b62"/><stop offset=".7" stop-color="#7a1534"/><stop offset="1" stop-color="#4a0b1f"/></radialGradient></defs><path fill="url(#wx2)" d="M80 6c10 0 14 8 24 9s18-4 24 4 2 16 7 24 14 11 14 21-8 14-9 24 4 18-4 24-16 2-24 7-11 14-21 14-14-8-24-9-18 4-24-4-2-16-7-24-14-11-14-21 8-14 9-24-4-18 4-24 16-2 24-7S70 6 80 6z"/><circle cx="80" cy="80" r="44" fill="none" stroke="#e7a3b6" stroke-opacity=".5" stroke-width="2"/><g transform="translate(57 54)"><path d="M23 2 44 9v16c0 13-9 21-21 25C11 46 2 38 2 25V9z" fill="none" stroke="#f1b9c8" stroke-width="2.5"/><rect x="15" y="20" width="16" height="12" rx="2" fill="#f1b9c8"/><path d="M18 20v-4a5 5 0 0 1 10 0v4" stroke="#f1b9c8" stroke-width="2.5" fill="none"/></g></svg>
+    <h3>Sealed for staff</h3>
+    <p class="note">The Registrar's office opens only for the Registrar's wallet.</p>
+    <div class="mono" id="regAddr">loading…</div>
+    <div class="actions" style="justify-content:center"><button class="btn-maroon" id="regSwitch">Switch to the Registrar wallet</button></div>
+  </div>
+  <div id="regPanel" class="hidden">
+    <div class="reg-grid">
+      <div class="panel"><div class="step-n">STEP I</div><h3>Enrol a student</h3><p class="sub">Only enrolled wallets can earn and spend points.</p>
+        <label>Student wallet</label><input id="eAddr" placeholder="0x…">
+        <div class="actions"><button class="btn-maroon" id="eYes">Enrol</button><button class="btn-line" id="eNo">Remove</button></div></div>
+      <div class="panel"><div class="step-n">STEP II</div><h3>Award Merit Points</h3><p class="sub">Recorded on-chain with its reason. Maximum 500.</p>
+        <label>Student wallet</label><input id="aTo" placeholder="0x…">
+        <label>Activity</label><select id="aAct">
+          <option value="5|Full attendance for a week">Full attendance for a week (+5)</option>
+          <option value="10|Assignment submitted on time">Assignment submitted on time (+10)</option>
+          <option value="50|Module passed">Module passed (+50)</option>
+          <option value="30|Four weeks of peer tutoring">Peer tutoring, 4 weeks (+30)</option>
+          <option value="25|Referred a friend who enrolled">Referred a friend (+25)</option>
+          <option value="100|Graduation bonus">Graduation bonus (+100)</option></select>
+        <div class="actions"><button class="btn-maroon" id="awardBtn">Award</button></div></div>
+      <div class="panel"><div class="step-n">STEP III</div><h3>Campus perk</h3><p class="sub">Pick a perk; its ID and price fill in automatically.</p>
+        <label>Perk</label><select id="pName"></select>
+        <div class="row"><div><label>Perk ID</label><input id="pId" type="number" value="1"></div><div><label>Points</label><input id="pCost" type="number" value="20"></div></div>
+        <div class="actions"><button class="btn-maroon" id="perkBtn">Save</button><button class="btn-line" id="perkOffBtn">Switch off</button><button class="btn-line btn-small" id="perkAllBtn">Add all 7 perks</button></div></div>
+      <div class="panel" style="grid-column:span 2"><div class="step-n">STEP IV</div><h3>Issue a credential</h3><p class="sub">The certificate PDF is fingerprinted in your browser with a random salt. Only the fingerprint goes on-chain.</p>
+        <div class="row"><div><label>Student wallet</label><input id="cTo" placeholder="0x…"></div><div><label>Certificate PDF</label><input id="cFile" type="file"></div></div>
+        <label>Programme</label><select id="cProg">
+          <option value="MSC-FINTECH-L9|9">MSc in FinTech (NFQ 9)</option><option value="MSC-DATA-L9|9">MSc in Data Analytics (NFQ 9)</option>
+          <option value="BA-BUS-L8|8">BA (Hons) in Business (NFQ 8)</option><option value="CERT-PY-L6|6">Certificate in Python (NFQ 6)</option></select>
+        <div class="actions"><button class="btn-gold" id="credBtn">Issue credential</button></div>
+        <div id="saltOut"></div></div>
+      <div class="panel"><div class="step-n">STEP V</div><h3>Revoke a credential</h3><p class="sub">For example after a misconduct finding.</p>
+        <label>Credential number</label><input id="rId" type="number" placeholder="1">
+        <label>Reason</label><input id="rWhy" value="Academic misconduct finding">
+        <div class="actions"><button class="btn-red" id="revokeBtn">Revoke</button></div></div>
+    </div>
+    <div class="panel" style="margin-top:18px"><h3>The college ledger</h3><p class="sub">Every action is a public record on Sepolia.</p><div class="log" id="log"><p class="note">Loading…</p></div></div>
+  </div>
+</div></section>
+
+<footer><div class="container">
+  <div class="cols">
+    <div><h4>Whitford Global College</h4><p style="max-width:360px;line-height:1.7">An independent college in Dublin offering business, computing and FinTech programmes from certificate to master's level.</p></div>
+    <div><h4>Study</h4><a href="#programmes">Programmes</a><a href="#merit">Merit Points</a><a href="#hub">Student Hub</a></div>
+    <div><h4>Employers</h4><a href="#verify">Verify a degree</a><a href="#registrar">Registrar</a></div>
+    <div><h4>On-chain</h4><a target="_blank" href="https://sepolia.etherscan.io/address/0x1F553b6E6589b19E30674a633E8eeAF8265b5157">Credential contract ↗</a><a target="_blank" href="https://sepolia.etherscan.io/address/0xdc97640C2Beb1e09f82A570f71ff90855BC2584d">Merit Points contract ↗</a></div>
+  </div>
+  <div class="giant">Whitford</div>
+  <div class="legal"><span>Whitford Global College is a fictional college created for an NCI Blockchain Technologies project.</span><span>Sepolia testnet · No real money</span></div>
+</div></footer>
+<div id="toast"></div>
+<script>
+const EXPLORER = "https://sepolia.etherscan.io";
+const READ_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+const ADDR = { cred: "0x1f553b6e6589b19e30674a633e8eeaf8265b5157", pts: "0xdc97640c2beb1e09f82a570f71ff90855bc2584d" };
+const CRED_ABI = [
+  "function owner() view returns (address)",
+  "function verify(uint256 tokenId) view returns (bool valid, address holder, string programmeCode, uint8 nfqLevel, uint64 awardDate)",
+  "function verifyDocument(bytes32 documentHash) view returns (bool valid, uint256 tokenId)",
+  "function issue(address to, bytes32 documentHash, string programmeCode, uint8 nfqLevel, uint64 awardDate) returns (uint256)",
+  "function revoke(uint256 tokenId, string reason)",
+  "event CredentialIssued(uint256 indexed tokenId, address indexed student, string programmeCode, uint8 nfqLevel)",
+  "event CredentialRevoked(uint256 indexed tokenId, string reason)"
+];
+const PTS_ABI = [
+  "function owner() view returns (address)",
+  "function balanceOf(address) view returns (uint256)",
+  "function enrolled(address) view returns (bool)",
+  "function perks(uint256) view returns (string name, uint256 cost, bool active)",
+  "function setEnrolled(address wallet, bool status)",
+  "function awardPoints(address student, uint256 amount, string reason)",
+  "function setPerk(uint256 perkId, string name, uint256 cost, bool active)",
+  "function redeem(uint256 perkId)",
+  "event PointsAwarded(address indexed student, uint256 amount, string reason)",
+  "event PerkRedeemed(address indexed student, uint256 indexed perkId, uint256 cost)"
+];
+const PERKS = [
+  { id: 1, name: "Priority study room",               cost: 20,  icon: "🪑" },
+  { id: 2, name: "Canteen coffee",                    cost: 30,  icon: "☕" },
+  { id: 3, name: "Library late-fee waiver",           cost: 40,  icon: "📚" },
+  { id: 4, name: "Printing credit EUR 5",             cost: 50,  icon: "🖨️" },
+  { id: 5, name: "Society or ball ticket",            cost: 100, icon: "🎟️" },
+  { id: 6, name: "Whitford merchandise",              cost: 150, icon: "🧣" },
+  { id: 7, name: "Give back: hardship fund donation", cost: 100, icon: "💛" }
+];
+const PERK_ICON = { "coffee": "☕", "print": "🖨️", "library": "📚", "study": "🪑", "ticket": "🎟️", "society": "🎟️", "merch": "🧣", "give": "💛", "hardship": "💛" };
+const PROG_NAME = { "MSC-FINTECH-L9": "MSc in FinTech", "MSC-DATA-L9": "MSc in Data Analytics", "BA-BUS-L8": "BA (Hons) in Business", "CERT-PY-L6": "Certificate in Python" };
+
+const $ = id => document.getElementById(id);
+const reader = new ethers.JsonRpcProvider(READ_RPC);
+let provider, signer, me, owner, credR, ptsR, credW, ptsW;
+credR = new ethers.Contract(ADDR.cred, CRED_ABI, reader);
+ptsR = new ethers.Contract(ADDR.pts, PTS_ABI, reader);
+
+function toast(msg, ms = 6000) { const t = $("toast"); t.innerHTML = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", ms); }
+function short(a) { return a ? a.slice(0, 6) + "…" + a.slice(-4) : ""; }
+function errMsg(e) { const m = e && (e.reason || (e.info && e.info.error && e.info.error.message) || (e.error && e.error.message) || e.shortMessage || e.message); return (m || "Something went wrong").replace("could not coalesce error", "the network returned an error, please try again"); }
+function fmtDate(ts) { return new Date(Number(ts) * 1000).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }); }
+function same(a, b) { return a && b && a.toLowerCase() === b.toLowerCase(); }
+function icon(name) { const n = name.toLowerCase(); for (const k in PERK_ICON) if (n.includes(k)) return PERK_ICON[k]; return "🎓"; }
+
+// read past events in small block ranges, because public RPC servers refuse very large log queries
+const LOOKBACK = 150000; // about 3 weeks of Sepolia blocks
+async function qf(contract, filter) {
+  const runner = (typeof provider !== "undefined" && provider) ? provider : (typeof reader !== "undefined" ? reader : contract.runner);
+  const c = contract.connect(runner);
+  const latest = await runner.getBlockNumber();
+  const start = Math.max(0, latest - LOOKBACK);
+  try { return await c.queryFilter(filter, start, latest); } catch (e) {}
+  let out = [], size = 20000, to = latest;
+  while (to >= start) {
+    const from = Math.max(start, to - size + 1);
+    try { out = (await c.queryFilter(filter, from, to)).concat(out); to = from - 1; }
+    catch (e) { if (size <= 1000) throw e; size = Math.floor(size / 2); }
+  }
+  return out;
+}
+
+// ---------- public data (no wallet needed) ----------
+async function loadPublic() {
+  try { owner = await ptsR.owner(); $("regAddr").textContent = owner; } catch (e) { $("regAddr").textContent = "could not load (check your internet connection)"; }
+  loadPerks(); updateRole();
+}
+
+// ---------- wallet ----------
+async function connect() {
+  if (!window.ethereum) return toast("MetaMask was not found in this browser. Open this page in the browser where MetaMask is installed, through Live Server (http://127.0.0.1…).", 9000);
+  try {
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    try { await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xaa36a7" }] }); } catch (e) { toast("Please switch MetaMask to Sepolia."); }
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner(); me = await signer.getAddress();
+    credW = new ethers.Contract(ADDR.cred, CRED_ABI, signer);
+    ptsW = new ethers.Contract(ADDR.pts, PTS_ABI, signer);
+    $("netPill").textContent = "Sepolia · " + short(me); $("netPill").classList.add("on");
+    $("connectBtn").textContent = "Connected ✓";
+    $("addr").textContent = me;
+    refresh();
+  } catch (e) { toast(errMsg(e)); }
+}
+async function switchAccount() {
+  if (!window.ethereum) return toast("MetaMask was not found in this browser.");
+  try { await window.ethereum.request({ method: "wallet_requestPermissions", params: [{ eth_accounts: {} }] }); await connect(); }
+  catch (e) { toast(errMsg(e)); }
+}
+$("connectBtn").onclick = connect; $("switchBtn").onclick = switchAccount; $("regSwitch").onclick = switchAccount;
+if (window.ethereum && window.ethereum.on) { window.ethereum.on("accountsChanged", () => connect()); window.ethereum.on("chainChanged", () => location.reload()); }
+
+function updateRole(enrolled) {
+  const isReg = !!same(me, owner);
+  $("regLock").classList.toggle("hidden", isReg);
+  $("regPanel").classList.toggle("hidden", !isReg);
+  $("roleLbl").textContent = !me ? "" : isReg ? "Registrar" : enrolled ? "Student" : "Visitor";
+  if (isReg) loadLog();
+}
+
+async function refresh() {
+  if (!me) return;
+  try {
+    const [bal, en] = await Promise.all([ptsR.balanceOf(me), ptsR.enrolled(me)]);
+    $("balance").textContent = bal.toString();
+    const isReg = same(me, owner);
+    $("enrolLine").innerHTML = isReg ? '<span class="badge b-gold">Registrar wallet</span>'
+      : en ? '<span class="badge b-ok">Enrolled student</span>' : '<span class="badge b-wait">Not enrolled</span> <span class="note" style="margin-left:6px">Ask the Registrar to enrol this wallet</span>';
+    updateRole(en);
+  } catch (e) { toast("Could not read the college contracts: " + errMsg(e), 9000); }
+  loadTier(); loadCreds(); loadPerks();
+}
+
+async function loadTier() {
+  try {
+    const ev = await qf(ptsR, ptsR.filters.PointsAwarded(me));
+    const total = ev.reduce((s, e) => s + Number(e.args.amount), 0);
+    const tier = total >= 800 ? "Gold" : total >= 300 ? "Silver" : "Bronze";
+    const next = total >= 800 ? null : total >= 300 ? 800 : 300;
+    $("tierName").textContent = "Tier: " + tier + " · " + total + " earned";
+    $("tierNext").textContent = next ? (next - total) + " to " + (next === 300 ? "Silver" : "Gold") : "Top tier";
+    $("tierFill").style.width = Math.min(100, next ? (total / next) * 100 : 100) + "%";
+  } catch (e) {}
+}
+
+const DEGREE = { MSC: "Master of Science", BA: "Bachelor of Arts (Honours)", CERT: "Certificate" };
+const CREST = '<svg viewBox="0 0 46 52"><path d="M23 2 44 9v16c0 13-9 21-21 25C11 46 2 38 2 25V9z" fill="#5c1430" stroke="#e7c873" stroke-width="2.5"/><path d="M23 12l11 5H12z" fill="#e7c873"/><rect x="14" y="18" width="3" height="13" fill="#e7c873"/><rect x="21.5" y="18" width="3" height="13" fill="#e7c873"/><rect x="29" y="18" width="3" height="13" fill="#e7c873"/><rect x="12" y="32" width="22" height="3" fill="#e7c873"/></svg>';
+const SEAL = '<svg viewBox="0 0 100 100"><defs><radialGradient id="sg" cx=".35" cy=".3"><stop offset="0" stop-color="#fff1c2"/><stop offset=".6" stop-color="#d9a940"/><stop offset="1" stop-color="#8a5f1c"/></radialGradient></defs><path fill="url(#sg)" d="M50 2l6 7 9-3 3 9 9 1-1 9 8 5-5 8 5 8-8 5 1 9-9 1-3 9-9-3-6 7-6-7-9 3-3-9-9-1 1-9-8-5 5-8-5-8 8-5-1-9 9-1 3-9 9 3z"/><circle cx="50" cy="50" r="30" fill="none" stroke="#8a5f1c" stroke-width="1.2" stroke-dasharray="2 2"/></svg>';
+function credHTML(id, v, opts = {}) {
+  const code = v.programmeCode;
+  const prog = (PROG_NAME[code] || code).replace(/^(MSc|BA \(Hons\)|Certificate) in /, "");
+  const degree = DEGREE[code.split("-")[0]] || "Award";
+  const num = String(id).padStart(4, "0");
+  return `${opts.noLink ? "" : '<div class="cred-item">'}<div class="dip ${v.valid ? "" : "revoked"} ${opts.cls || ""}"><div class="dip-in">
+    ${CREST.replace("<svg", '<svg class="dip-wm"')}
+    <div class="dip-chain">ERC-721 · SOULBOUND</div><div class="dip-no">No. ${num}</div>
+    ${CREST.replace("<svg", '<svg class="dip-crest"')}
+    <div class="dip-school">WHITFORD GLOBAL COLLEGE</div>
+    <div class="dip-conf">confers upon the holder of this wallet the award of</div>
+    <div class="dip-deg">${degree} in</div>
+    <div class="dip-prog">${prog}</div>
+    <div class="dip-meta"><div class="dip-sig"><small>NFQ LEVEL</small><b>Level ${v.nfqLevel}</b></div><div class="dip-sig" style="text-align:right"><small>CONFERRED</small><b>${fmtDate(v.awardDate)}</b></div></div>
+    <div class="seal">${SEAL}<span>${v.valid ? "VALID" : "VOID"}</span></div>
+    ${v.valid ? "" : '<div class="stamp">REVOKED</div>'}
+    <div class="holo"></div><div class="glare"></div>
+  </div></div>${opts.noLink ? "" : `<div class="dip-link"><span class="badge ${v.valid ? "b-ok" : "b-no"}">${v.valid ? "Valid" : "Revoked"}</span><a target="_blank" href="${EXPLORER}/nft/${ADDR.cred}/${id}">View on Etherscan ↗</a></div></div>`}`;
+}
+
+async function loadCreds() {
+  const box = $("creds");
+  try {
+    const ev = await qf(credR, credR.filters.CredentialIssued(null, me));
+    let html = "";
+    for (const e of ev.reverse()) { const v = await credR.verify(e.args.tokenId); if (same(v.holder, me)) html += credHTML(e.args.tokenId, v); }
+    box.innerHTML = html ? html : '<div class="empty">No credentials for this wallet yet.<br>They are issued by the Registrar when an award is approved.</div>';
+  } catch (e) { box.innerHTML = '<p class="note">Could not load credentials: ' + errMsg(e) + '</p>'; }
+}
+
+async function loadPerks() {
+  const box = $("perks"); let html = "";
+  for (let i = 1; i <= 10; i++) {
+    try {
+      const p = await ptsR.perks(i);
+      if (p.cost > 0n && p.active) html += `<div class="perk"><div class="ic">${icon(p.name)}</div><div class="grow"><b>${p.name}</b><small>${p.cost} points</small></div><button class="btn-maroon btn-small" data-perk="${i}">Redeem</button></div>`;
+    } catch (e) {}
+  }
+  box.innerHTML = html || '<p class="note">No perks yet. The Registrar adds them in the Registrar portal.</p>';
+  box.querySelectorAll("button[data-perk]").forEach(b => b.onclick = () => send(() => ptsW.redeem(b.dataset.perk), "Perk redeemed. Show this message at the counter."));
+}
+
+async function loadLog() {
+  const box = $("log");
+  try {
+    const [a, b, c, d] = await Promise.all([
+      qf(ptsR, ptsR.filters.PointsAwarded()), qf(ptsR, ptsR.filters.PerkRedeemed()),
+      qf(credR, credR.filters.CredentialIssued()), qf(credR, credR.filters.CredentialRevoked())]);
+    const rows = [
+      ...a.map(e => [e.blockNumber, `🎯 ${e.args.amount} points to ${short(e.args.student)}: ${e.args.reason}`, e.transactionHash]),
+      ...b.map(e => [e.blockNumber, `🛍️ ${short(e.args.student)} redeemed perk #${e.args.perkId} for ${e.args.cost} points`, e.transactionHash]),
+      ...c.map(e => [e.blockNumber, `🎓 Credential #${e.args.tokenId} (${e.args.programmeCode}) issued to ${short(e.args.student)}`, e.transactionHash]),
+      ...d.map(e => [e.blockNumber, `⛔ Credential #${e.args.tokenId} revoked: ${e.args.reason}`, e.transactionHash])
+    ].sort((x, y) => y[0] - x[0]).slice(0, 12);
+    box.innerHTML = rows.length ? rows.map(r => `<div><span>${r[1]}</span><a target="_blank" href="${EXPLORER}/tx/${r[2]}">${r[2].slice(0, 10)}… ↗</a></div>`).join("") : '<p class="note">No activity yet.</p>';
+  } catch (e) { box.innerHTML = '<p class="note">Could not load activity: ' + errMsg(e) + '</p>'; }
+}
+
+async function send(fn, okMsg) {
+  if (!signer) return toast("Connect your wallet first.");
+  try {
+    toast("Confirm the transaction in MetaMask…", 20000);
+    const tx = await fn();
+    toast(`Sent. Waiting for Sepolia… <a style="color:#e7c873" target="_blank" href="${EXPLORER}/tx/${tx.hash}">track</a>`, 40000);
+    await tx.wait();
+    toast("✔ " + okMsg + ` <a style="color:#e7c873" target="_blank" href="${EXPLORER}/tx/${tx.hash}">Etherscan</a>`, 9000);
+    refresh();
+  } catch (e) { toast("✖ " + errMsg(e), 9000); }
+}
+function addr(id) { const v = $(id).value.trim(); if (!ethers.isAddress(v)) { toast("Please enter a valid wallet address."); throw new Error("bad address"); } return v; }
+async function fileHash(file, saltHex) { const buf = new Uint8Array(await file.arrayBuffer()); return ethers.keccak256(ethers.concat([buf, ethers.getBytes(saltHex)])); }
+
+// registrar actions
+$("eYes").onclick = () => { try { const a = addr("eAddr"); send(() => ptsW.setEnrolled(a, true), "Student enrolled."); } catch (e) {} };
+$("eNo").onclick = () => { try { const a = addr("eAddr"); send(() => ptsW.setEnrolled(a, false), "Student removed."); } catch (e) {} };
+$("awardBtn").onclick = () => { try { const to = addr("aTo"); const [n, why] = $("aAct").value.split("|"); send(() => ptsW.awardPoints(to, n, why), n + " Merit Points awarded."); } catch (e) {} };
+$("pName").innerHTML = PERKS.map(p => `<option value="${p.name}">${p.icon} ${p.name} (${p.cost})</option>`).join("");
+$("pName").onchange = () => { const p = PERKS.find(x => x.name === $("pName").value); $("pId").value = p.id; $("pCost").value = p.cost; };
+$("pName").onchange();
+$("perkAllBtn").onclick = async () => {
+  if (!signer) return toast("Connect the Registrar wallet first.");
+  for (const p of PERKS) {
+    try {
+      const cur = await ptsR.perks(p.id);
+      if (cur.active && cur.name === p.name && cur.cost === BigInt(p.cost)) continue;
+      toast(`Perk ${p.id} of ${PERKS.length}: confirm "${p.name}" in MetaMask…`, 30000);
+      const tx = await ptsW.setPerk(p.id, p.name, p.cost, true); await tx.wait();
+    } catch (e) { return toast("✖ Stopped at perk " + p.id + ": " + errMsg(e), 9000); }
+  }
+  toast("✔ All campus perks are saved.", 8000); loadPerks();
+};
+$("perkBtn").onclick = () => send(() => ptsW.setPerk($("pId").value, $("pName").value, $("pCost").value, true), "Perk saved.");
+$("perkOffBtn").onclick = () => send(() => ptsW.setPerk($("pId").value, $("pName").value, $("pCost").value || 1, false), "Perk switched off.");
+$("credBtn").onclick = async () => {
+  try {
+    const to = addr("cTo"); const f = $("cFile").files[0];
+    if (!f) return toast("Choose the certificate PDF first.");
+    const [code, level] = $("cProg").value.split("|");
+    const salt = ethers.hexlify(ethers.randomBytes(16)); const h = await fileHash(f, salt);
+    $("saltOut").innerHTML = `<p class="note" style="margin-top:12px"><b>Give this salt to the graduate</b> with their PDF. Employers need both.</p><div class="mono">${salt}</div>`;
+    send(() => credW.issue(to, h, code, Number(level), Math.floor(Date.now() / 1000) - 60), "Credential issued to the student's wallet.");
+  } catch (e) { if (e.message !== "bad address") toast(errMsg(e)); }
+};
+$("revokeBtn").onclick = () => { const id = $("rId").value; if (!id) return toast("Enter a credential number."); send(() => credW.revoke(id, $("rWhy").value), "Credential revoked."); };
+
+// verification (public)
+$("chkBtn").onclick = async () => {
+  const out = $("chkOut"), id = $("chkId").value; if (!id) return toast("Enter a credential number.");
+  out.innerHTML = '<p class="note">Checking the blockchain…</p>';
+  try {
+    const v = await credR.verify(id);
+    if (v.holder === ethers.ZeroAddress) { out.innerHTML = '<span class="badge b-no">NOT FOUND</span><p class="note">No Whitford credential has this number.</p>'; return; }
+    out.innerHTML = `<p><span class="badge ${v.valid ? "b-ok" : "b-no"}">${v.valid ? "Genuine and valid" : "Revoked by the college"}</span> <span class="note" style="margin-left:6px;font-family:var(--mono)">held by ${short(v.holder)}</span></p>` + credHTML(id, v, { noLink: true });
+  } catch (e) { out.innerHTML = '<span class="badge b-no">COULD NOT CHECK</span><p class="note">' + errMsg(e) + '</p>'; }
+};
+$("fileBtn").onclick = async () => {
+  const out = $("fileOut"), f = $("vFile").files[0], salt = $("vSalt").value.trim();
+  if (!f || !salt) return toast("Choose the file and paste the salt.");
+  try {
+    const r = await credR.verifyDocument(await fileHash(f, salt));
+    out.innerHTML = r.valid ? `<span class="badge b-ok">✔ GENUINE: MATCHES CREDENTIAL #${r.tokenId}</span><p class="note">This exact file was issued by Whitford Global College and is still valid.</p>`
+      : `<span class="badge b-no">✖ NO VALID MATCH</span><p class="note">The file was altered, the salt is wrong, or the credential was revoked.</p>`;
+  } catch (e) { out.innerHTML = '<span class="badge b-no">COULD NOT CHECK</span><p class="note">' + errMsg(e) + '</p>'; }
+};
+
+// ---------- visuals ----------
+const mq = "<span>Master of Science in FinTech</span><em>◆</em><span>Merit Points</span><em>◆</em><span>Data Analytics</span><em>◆</em><span>Soulbound credentials</span><em>◆</em><span>BA in Business</span><em>◆</em><span>Verify in seconds</span><em>◆</em><span>Certificate in Python</span><em>◆</em>";
+$("marq").innerHTML = mq + mq;
+$("archStage").insertAdjacentHTML("beforeend", credHTML(1, { valid: true, programmeCode: "MSC-FINTECH-L9", nfqLevel: 9, awardDate: Math.floor(new Date("2026-11-14") / 1000) }, { noLink: true }));
+document.addEventListener("pointermove", e => {
+  const card = e.target.closest && e.target.closest(".dip");
+  document.querySelectorAll(".dip.live").forEach(c => { if (c !== card) { c.classList.remove("live"); c.style.removeProperty("--rx"); c.style.removeProperty("--ry"); } });
+  if (!card) return;
+  const r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  card.classList.add("live");
+  card.style.setProperty("--mx", x * 100 + "%"); card.style.setProperty("--my", y * 100 + "%");
+  card.style.setProperty("--rx", (0.5 - y) * 14 + "deg"); card.style.setProperty("--ry", (x - 0.5) * 18 + "deg");
+});
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .12 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+loadPublic();
+</script>
+
+</body>
+</html>
