@@ -407,6 +407,7 @@ const CRED_ABI = [
   "function issue(address to, bytes32 documentHash, string programmeCode, uint8 nfqLevel, uint64 awardDate) returns (uint256)",
   "function revoke(uint256 tokenId, string reason)",
   "function setProgrammeURI(string programmeCode, string uri)",
+  "function tokenURI(uint256 tokenId) view returns (string)",
   "event CredentialIssued(uint256 indexed tokenId, address indexed student, string programmeCode, uint8 nfqLevel)",
   "event CredentialRevoked(uint256 indexed tokenId, string reason)"
 ];
@@ -713,6 +714,24 @@ $("progArtBtn").onclick = async () => {
 };
 $("revokeBtn").onclick = () => { const id = $("rId").value; if (!id) return toast("Enter a credential number."); send(() => credW.revoke(id, $("rWhy").value), "Credential revoked."); };
 
+
+// ---------- NFT artwork checker: reads tokenURI from the chain, fetches the metadata and shows the image ----------
+async function nftCheck(contract, id) {
+  const rows = [];
+  const ok = (t) => rows.push(`<div>✅ ${t}</div>`), bad = (t) => rows.push(`<div>❌ ${t}</div>`);
+  let uri = "", meta = null;
+  try { uri = await contract.tokenURI(id); } catch (e) { bad("Could not read tokenURI: " + errMsg(e)); return box(); }
+  if (!uri) { bad("tokenURI is <b>empty</b>. The artwork link was not set on this contract. Use the Link artwork button in the console with the owner wallet."); return box(); }
+  ok(`tokenURI on the blockchain: <a target="_blank" href="${uri}">${uri}</a>`);
+  if (uri.startsWith("ipfs://")) { bad("The link is an ipfs:// placeholder, not your GitHub file. Click Link artwork again."); return box(); }
+  try { const r = await fetch(uri, { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); meta = await r.json(); ok(`Metadata file opens: <b>${meta.name || "(no name)"}</b>`); }
+  catch (e) { bad(`The metadata file does not open (${e.message}). Check the file is uploaded to the main folder of the repo and the Actions tab shows a green tick.`); return box(); }
+  if (!meta.image) { bad("The metadata file has no image link."); return box(); }
+  rows.push(`<div id="imgRow">⏳ Loading image <a target="_blank" href="${meta.image}">${meta.image}</a></div><img src="${meta.image}" style="width:180px;border-radius:12px;margin-top:10px;display:block" onload="this.previousElementSibling.innerHTML='✅ Image opens. Everything on your side is correct; if MetaMask is still blank, remove the NFT and import it again.'" onerror="this.previousElementSibling.innerHTML='❌ The image does not open. Check the .png file is uploaded with the exact same name.'; this.remove()">`);
+  return box();
+  function box() { return `<div class="nftchk" style="margin-top:16px;padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);font-size:13px;line-height:1.9;text-align:left;word-break:break-all"><b style="letter-spacing:1.5px;font-size:11px">NFT ARTWORK CHECK (what MetaMask sees)</b>${rows.join("")}</div>`; }
+}
+
 // verification (public)
 $("chkBtn").onclick = async () => {
   const out = $("chkOut"), id = $("chkId").value; if (!id) return toast("Enter a credential number.");
@@ -720,7 +739,7 @@ $("chkBtn").onclick = async () => {
   try {
     const v = await credR.verify(id);
     if (v.holder === ethers.ZeroAddress) { out.innerHTML = '<span class="badge b-no">NOT FOUND</span><p class="note">No Whitford credential has this number.</p>'; return; }
-    out.innerHTML = `<p><span class="badge ${v.valid ? "b-ok" : "b-no"}">${v.valid ? "Genuine and valid" : "Revoked by the college"}</span> <span class="note" style="margin-left:6px;font-family:var(--mono)">held by ${short(v.holder)}</span></p>` + credHTML(id, v, { noLink: true });
+    out.innerHTML = `<p><span class="badge ${v.valid ? "b-ok" : "b-no"}">${v.valid ? "Genuine and valid" : "Revoked by the college"}</span> <span class="note" style="margin-left:6px;font-family:var(--mono)">held by ${short(v.holder)}</span></p>` + credHTML(id, v, { noLink: true }) + await nftCheck(credR, id);
   } catch (e) { out.innerHTML = '<span class="badge b-no">COULD NOT CHECK</span><p class="note">' + errMsg(e) + '</p>'; }
 };
 $("fileBtn").onclick = async () => {
