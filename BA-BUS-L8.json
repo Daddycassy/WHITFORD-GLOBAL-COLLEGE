@@ -1,8 +1,8 @@
 {
   "name": "Whitford Credential - Bachelor of Arts (Honours) in Business",
   "description": "Soulbound digital credential for the Bachelor of Arts (Honours) in Business (NFQ Level 8) from Whitford Global College, Dublin, a fictional college created for an NCI Blockchain Technologies project. It proves the award was issued by the college. No name or grades are stored on-chain; employers verify the certificate file with the salt given to the graduate. The credential cannot be transferred and can be revoked by the Registrar.",
-  "image": "https://daddycassy.github.io/whitford-college/BA-BUS-L8.png",
-  "external_url": "https://daddycassy.github.io/whitford-college/",
+  "image": "https://daddycassy.github.io/WHITFORD-GLOBAL-COLLEGE/BA-BUS-L8.png",
+  "external_url": "https://daddycassy.github.io/WHITFORD-GLOBAL-COLLEGE/",
   "attributes": [
     {
       "trait_type": "College",

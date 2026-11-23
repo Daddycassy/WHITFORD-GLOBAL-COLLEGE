@@ -379,7 +379,8 @@
         <label>Reason</label><input id="rWhy" value="Academic misconduct finding">
         <div class="actions"><button class="btn-red" id="revokeBtn">Revoke</button></div></div>
       <div class="panel" style="grid-column:1/-1"><div class="step-n">STEP VI</div><h3>Credential artwork</h3><p class="sub">Makes the credentials show their picture in MetaMask. Do this once after deploying.</p>
-        <label>Artwork folder</label><div class="row"><input id="artBase"><button class="btn-gold" id="progArtBtn" style="flex:0 0 auto">Link artwork for all 4 programmes</button></div></div>
+        <div class="actions"><button class="btn-gold" id="chainArtBtn">Store artwork on-chain (4 programmes)</button></div><p class="note" style="margin-top:10px">Recommended: the picture is saved inside the contract, so MetaMask needs no website.</p>
+        <label>Or link GitHub files</label><div class="row"><input id="artBase"><button class="btn-line" id="progArtBtn" style="flex:0 0 auto">Link GitHub artwork</button></div></div>
     </div>
     <div class="panel" style="margin-top:18px"><h3>The college ledger</h3><p class="sub">Every action is a public record on Sepolia.</p><div class="log" id="log"><p class="note">Loading…</p></div></div>
   </div>
@@ -702,7 +703,32 @@ $("credBtn").onclick = async () => {
     send(() => credW.issue(to, h, code, Number(level), awardDate), "Credential issued to the student's wallet.");
   } catch (e) { if (e.message !== "bad address") toast(errMsg(e)); }
 };
-$("artBase").value = "https://daddycassy.github.io/whitford-college/";
+
+// ---------- on-chain artwork: the picture and details are stored inside the contract as a data: URI ----------
+function b64(str) { return btoa(unescape(encodeURIComponent(str))); }
+function dataURI(meta) { return "data:application/json;base64," + b64(JSON.stringify(meta)); }
+
+const PROG_ART = { "MSC-FINTECH-L9": ["MASTER OF SCIENCE", "FinTech", 9, "#5c1430", "#a33a62"], "MSC-DATA-L9": ["MASTER OF SCIENCE", "Data Analytics", 9, "#2e1a5a", "#7d5ad1"], "BA-BUS-L8": ["BACHELOR OF ARTS (HONOURS)", "Business", 8, "#5a3608", "#d39a3a"], "CERT-PY-L6": ["CERTIFICATE", "Python", 6, "#0f3a34", "#3fae96"] };
+function progSVG(code) {
+  const [deg, name, lvl, a, b] = PROG_ART[code];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><defs><radialGradient id="g" cx=".85" cy=".1" r="1"><stop offset="0" stop-color="${b}"/><stop offset=".55" stop-color="${a}"/><stop offset="1" stop-color="#12040a"/></radialGradient><linearGradient id="h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e2a4"/><stop offset=".5" stop-color="#c99a45"/><stop offset="1" stop-color="#f1d48d"/></linearGradient></defs><rect width="500" height="500" fill="url(#g)"/><rect x="18" y="18" width="464" height="464" rx="20" fill="none" stroke="url(#h)" stroke-width="3"/><rect x="28" y="28" width="444" height="444" rx="14" fill="none" stroke="#d9b46a" stroke-opacity=".4"/><g transform="translate(227 62) scale(1)"><path d="M23 2 44 9v16c0 13-9 21-21 25C11 46 2 38 2 25V9z" fill="#14060b" stroke="url(#h)" stroke-width="2"/><path d="M23 12l11 5H12z" fill="url(#h)"/><rect x="14" y="18" width="3" height="13" fill="url(#h)"/><rect x="21.5" y="18" width="3" height="13" fill="url(#h)"/><rect x="29" y="18" width="3" height="13" fill="url(#h)"/><rect x="12" y="32" width="22" height="3" fill="url(#h)"/></g><text x="250" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="17" letter-spacing="6" fill="#f3dca0">WHITFORD GLOBAL COLLEGE</text><text x="250" y="174" text-anchor="middle" font-family="Arial" font-size="10" letter-spacing="4" fill="#bfa983">DUBLIN · EST. 1998</text><line x1="170" y1="200" x2="330" y2="200" stroke="#d9b46a" stroke-opacity=".7"/><text x="250" y="240" text-anchor="middle" font-family="Arial" font-size="12" letter-spacing="3" fill="#e2cfa6">${deg}</text><text x="250" y="${name.length > 10 ? 300 : 310}" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="${name.length > 10 ? 50 : 66}" fill="url(#h)">${name}</text><rect x="150" y="345" width="200" height="34" rx="17" fill="#2eaa69" fill-opacity=".18" stroke="#7ef0b3" stroke-opacity=".6"/><text x="250" y="367" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="12" letter-spacing="2" fill="#7ef0b3">NFQ LEVEL ${lvl} · VERIFIED</text><text x="250" y="440" text-anchor="middle" font-family="Arial" font-size="10" letter-spacing="3" fill="#bfa983">SOULBOUND CREDENTIAL · ERC-721 · SEPOLIA</text></svg>`;
+}
+function progMeta(code) {
+  const [deg, name, lvl] = PROG_ART[code], full = PROG_NAME[code] || code;
+  return { name: `Whitford Credential - ${full}`, description: `Soulbound digital credential for the ${full} (NFQ Level ${lvl}) from Whitford Global College, Dublin (fictional, NCI Blockchain Technologies project). No name or grades are stored on-chain. It cannot be transferred and can be revoked by the Registrar.`,
+    image: new URL(code + ".png", location.href).href,
+    attributes: [{ trait_type: "College", value: "Whitford Global College" }, { trait_type: "Programme code", value: code }, { trait_type: "NFQ level", value: lvl }, { trait_type: "Transferable", value: "No (soulbound)" }] };
+}
+$("chainArtBtn").onclick = async () => {
+  if (!location.href.startsWith("https://")) return toast("Open the live GitHub Pages site first, so the picture links point to your published PNG files.", 9000);
+  if (!signer) return toast("Connect the Registrar wallet first.");
+  for (const code of Object.keys(PROG_ART)) {
+    try { toast(`Storing ${code} artwork on-chain: confirm in MetaMask…`, 40000); const tx = await credW.setProgrammeURI(code, dataURI(progMeta(code))); await tx.wait(); }
+    catch (e) { return toast("✖ Stopped at " + code + ": " + errMsg(e), 9000); }
+  }
+  toast("✔ Artwork stored on-chain for all 4 programmes. In MetaMask, remove the NFT and import it again.", 10000);
+};
+$("artBase").value = new URL("./", location.href).href;
 $("progArtBtn").onclick = async () => {
   if (!signer) return toast("Connect the Registrar wallet first.");
   const base = $("artBase").value.trim().replace(/\/?$/, "/");
@@ -722,12 +748,12 @@ async function nftCheck(contract, id) {
   let uri = "", meta = null;
   try { uri = await contract.tokenURI(id); } catch (e) { bad("Could not read tokenURI: " + errMsg(e)); return box(); }
   if (!uri) { bad("tokenURI is <b>empty</b>. The artwork link was not set on this contract. Use the Link artwork button in the console with the owner wallet."); return box(); }
-  ok(`tokenURI on the blockchain: <a target="_blank" href="${uri}">${uri}</a>`);
+  ok(uri.startsWith("data:") ? "tokenURI on the blockchain: artwork stored on-chain (" + uri.length + " characters)" : `tokenURI on the blockchain: <a target="_blank" href="${uri}">${uri}</a>`);
   if (uri.startsWith("ipfs://")) { bad("The link is an ipfs:// placeholder, not your GitHub file. Click Link artwork again."); return box(); }
   try { const r = await fetch(uri, { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); meta = await r.json(); ok(`Metadata file opens: <b>${meta.name || "(no name)"}</b>`); }
   catch (e) { bad(`The metadata file does not open (${e.message}). Check the file is uploaded to the main folder of the repo and the Actions tab shows a green tick.`); return box(); }
   if (!meta.image) { bad("The metadata file has no image link."); return box(); }
-  rows.push(`<div id="imgRow">⏳ Loading image <a target="_blank" href="${meta.image}">${meta.image}</a></div><img src="${meta.image}" style="width:180px;border-radius:12px;margin-top:10px;display:block" onload="this.previousElementSibling.innerHTML='✅ Image opens. Everything on your side is correct; if MetaMask is still blank, remove the NFT and import it again.'" onerror="this.previousElementSibling.innerHTML='❌ The image does not open. Check the .png file is uploaded with the exact same name.'; this.remove()">`);
+  rows.push(`<div id="imgRow">⏳ Loading image…</div><img src="${meta.image}" style="width:180px;border-radius:12px;margin-top:10px;display:block" onload="this.previousElementSibling.innerHTML='✅ Image opens. Everything on your side is correct; if MetaMask is still blank, remove the NFT and import it again.'" onerror="this.previousElementSibling.innerHTML='❌ The image does not open. Check the .png file is uploaded with the exact same name.'; this.remove()">`);
   return box();
   function box() { return `<div class="nftchk" style="margin-top:16px;padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);font-size:13px;line-height:1.9;text-align:left;word-break:break-all"><b style="letter-spacing:1.5px;font-size:11px">NFT ARTWORK CHECK (what MetaMask sees)</b>${rows.join("")}</div>`; }
 }
